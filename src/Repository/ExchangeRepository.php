@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Factory\ExchangeFactory;
 use App\Service\SplFileInfoWrapper;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -27,28 +28,31 @@ class ExchangeRepository implements \JsonSerializable
         if ($this->filesystem->exists(self::FILE_DIR) !== false) {
             $importFile = $this->splFileInfo->openFile(mode: 'rb');
 
-
-
             while (!$importFile->eof()) {
                 $lineCount+=1;
-                $importFile->fgets();
-            }
+                $line = $importFile->fgets();
 
-            $importFile->rewind();
-            $startLine = rand(0,max(0,$lineCount-30));
-
-            // Move the file pointer to the startLine
-            for ($i = 0; $i < $startLine; $i++) {
-                $importFile->fgets();
-            }
-
-            // Read and store 30 consecutive lines (data points)
-            for ($i = 0; $i < 30; $i++) {
-                if ($importFile->eof()) {
-                    break; // Exit loop if end of file is reached
+                if(!empty($line)){
+                    $exchange = ExchangeFactory::createFromCsvLine($line);
                 }
-                $row = $importFile->fgets();
-                $dataPoints[] = $row;
+                if ($exchange !== null) {
+                    $dataPoints[] = $exchange;
+                }
+            }
+
+
+            $lineCount = count($dataPoints);
+            $startLine = rand(0, max(0, $lineCount - 30));
+            $importFile->seek($startLine);
+
+            for ($i = 0; $i < 30 && !$importFile->eof(); $i++) {
+                $line = $importFile->fgets();
+                if (!empty($line)) {
+                    $exchange = ExchangeFactory::createFromCsvLine($line);
+                    if ($exchange !== null) {
+                        $dataPoints[] = $exchange;
+                    }
+                }
             }
         }
         return $dataPoints;
