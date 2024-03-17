@@ -54,10 +54,42 @@ class OutlierController extends AbstractController
 
         }
 
+
+
+        $output=[];
+
+        foreach ($processedData as $dataPoint){
+            $number = 0;
+            if($dataPoint->getStockPriceValue() == $outliers[$number]){
+                $output[]=$dataPoint;
+                $number+=1;
+            }
+        }
+
+        $csvFilePaths = [];
+        foreach ($outliers as $index=>$outlier){
+            $csvFileName = 'outlier_' . $index . '.csv';
+            $csvFilePath = 'var/' . $csvFileName;
+            $csvFilePaths[] = $csvFilePath;
+
+            $csvFile = fopen($csvFilePath, 'w');
+            foreach ($output as $object) {
+
+                $deviation = abs($object->getStockPriceValue() - $mean);
+                $percentageDeviation = ($standardDeviation / $outlierThreshold) * 100;
+
+                // Extract object properties into an array
+                $data = [$object->getStockId(),$object->getTimestamp(), $object->getStockPriceValue(),$mean,$object->getStockPriceValue()-$mean,$percentageDeviation];
+                // Write data array to CSV file
+                fputcsv($csvFile, $data);
+            }
+            fclose($csvFile);
+        }
+
         $responseData = [
             'outliers' => $outliers,
+            'data points' => $output
         ];
-
 
         return new JsonResponse($responseData);
     }
