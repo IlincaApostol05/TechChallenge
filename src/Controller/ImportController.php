@@ -26,9 +26,9 @@ class ImportController extends AbstractController
         $file = $request->files->get('file');
         $file->move('var/', 'import.csv');
 
-        $this->exchangeRepository->getDataFromFile();
+        $data = $this->exchangeRepository->getDataFromFile();
 
-        return new JsonResponse($this->exchangeRepository->getAllExchanges());
+        return new JsonResponse($data);
     }
 
 }
