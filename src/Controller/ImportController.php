@@ -24,23 +24,16 @@ class ImportController extends AbstractController
     #[Route('/api/import', name: 'exchange_import', methods: 'POST')]
     public function importAction(Request $request): JsonResponse
     {
-        $uploadedFiles = $request->files->all();
-        $processedData = [];
+        /** @var UploadedFile $file */
+        $file = $request->files->get('file');
+        $file->move('var/', 'import.csv');
 
-        foreach ($uploadedFiles as $file) {
-            if ($file instanceof UploadedFile) {
-                $fileName = $file->getClientOriginalName();
-                $file->move('var/', $fileName);
+        $data = $this->exchangeRepository->getDataFromFile();
 
-                // Assuming getDataFromFile processes the uploaded file and returns data
-                $data = $this->exchangeRepository->getDataFromFile('var/' . $fileName);
-                $processedData[] = $data;
-            }
-        }
-        // Store processed data in session
-        $this->session->set('processed_data', $processedData);
+        // Store data in session
+        $this->session->set('processed_data', $data);
 
-        return new JsonResponse(['message' => 'Files uploaded and processed successfully']);
+        return new JsonResponse($data);
     }
 
 }
