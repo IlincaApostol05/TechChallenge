@@ -18,25 +18,19 @@ class AttributesValidator
     public function validate(Exchange $exchange): void
     {
             $timestamp = $exchange->getTimestamp();
-            $stockId = $exchange->getStockId();
             $stockPriceValue = $exchange->getStockPriceValue();
 
-            if(!is_string($stockId)){
-                throw new NotCorrectType($stockId);
+            if (!filter_var($stockPriceValue, FILTER_VALIDATE_FLOAT)){
+                throw new NotCorrectType();
             }
 
-            if(!is_float($stockPriceValue)){
-                throw new NotCorrectType($stockPriceValue);
+            if(!preg_match('/[0-9a-zA-Z]/', $timestamp)){
+                throw new EmptyFieldException($timestamp);
             }
 
+            $pattern = '/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/';
 
-
-
-        // Define the regular expression pattern for the expected format
-            $pattern = '/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/'; // d-m-yyyy or d/m/yyyy format
-
-            // Use preg_match to check if the timestamp matches the pattern
-            if (!empty($timestamp) && !preg_match($pattern, $timestamp)) {
+            if (empty($timestamp) || !preg_match($pattern, $timestamp)) {
                 throw new InvalidArgumentException("Invalid timestamp format: $timestamp");
             }
     }
