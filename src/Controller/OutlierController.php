@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Exchange;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +26,6 @@ class OutlierController extends AbstractController
         $filesNumber = $this->session->get('filesNumber');
 
         if ($filesNumber == 1)
-            // Process outliers for processedData
             $this->processOutliers($processedData, 0);
         else {
             $this->processOutliers($processedData1, 1);
@@ -44,26 +42,18 @@ class OutlierController extends AbstractController
             $stockPrices[] = $exchange->getStockPriceValue();
         }
 
-        if (!empty($stockPrices)) {                                                            //compute the mean
-            $mean = array_sum($stockPrices) / count($stockPrices);
-        } else
-            $mean = 0;
+        $mean = array_sum($stockPrices) / count($stockPrices);
 
         $sumSquaredDifferences = 0;
         foreach ($stockPrices as $price) {
             $sumSquaredDifferences += pow($price - $mean, 2);
         }
 
-        if (!empty($stockPrices)) {
-            $standardDeviation = sqrt($sumSquaredDifferences / count($stockPrices));   //compute standard deviation
-        } else
-            $standardDeviation = 0;
-
-        // Define outlier threshold as 2 standard deviations from the mean
-        $outlierThreshold = 2 * $standardDeviation;                                         //compute the outlier threshold
+        $standardDeviation = sqrt($sumSquaredDifferences / count($stockPrices));
+        $outlierThreshold = 2 * $standardDeviation;
 
         $outliers = [];
-        foreach ($stockPrices as $price) {                                                   //get the outliers array with floats
+        foreach ($stockPrices as $price) {
             if (abs($price - $mean) > $outlierThreshold) {
                 $outliers[] = $price;
             }
@@ -72,7 +62,7 @@ class OutlierController extends AbstractController
         $output = [];
         $number = 0;
         if (!empty($outliers)) {
-            foreach ($processedData as $dataPoint) {//get the objects for those outliners
+            foreach ($processedData as $dataPoint) {
                 if ($dataPoint->getStockPriceValue() == $outliers[$number]) {
                     $output[] = $dataPoint;
                     if ($number < count($outliers) - 1)
@@ -81,27 +71,15 @@ class OutlierController extends AbstractController
             }
         }
 
-
         $csvFilePath = 'var/' . $index . '.csv';
         $csvFile = fopen($csvFilePath, 'w');
         foreach ($output as $object) {
-            $deviation = abs($object->getStockPriceValue() - $mean);
             $percentageDeviation = ($standardDeviation / $outlierThreshold) * 100;
+            $data = [$object->getStockId(), $object->getTimestamp(), $object->getStockPriceValue(), $mean, $standardDeviation, $percentageDeviation];
 
-            // Extract object properties into an array
-            $data = [$object->getStockId(), $object->getTimestamp(), $object->getStockPriceValue(), $mean, $object->getStockPriceValue() - $mean, $percentageDeviation];
-            // Write data array to CSV file
             fputcsv($csvFile, $data);
         }
         fclose($csvFile);
-
-
-        $responseData = [
-            'outliers' => $outliers,
-            'data points' => $output
-        ];
-
-        print_r($responseData);
     }
 
 }

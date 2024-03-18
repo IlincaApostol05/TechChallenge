@@ -4,60 +4,64 @@ namespace App\Repository;
 
 use App\Factory\ExchangeFactory;
 use App\Service\SplFileInfoWrapper;
+use App\Validator\csvValidator;
 use Symfony\Component\Filesystem\Filesystem;
 
 class ExchangeRepository implements \JsonSerializable
 {
     private array $exchanges = [];
-    private const FILE_DIR = 'var/import.csv';
     private Filesystem $filesystem;
     private SplFileInfoWrapper $splFileInfo;
+    private csvValidator $csvValidator;
 
-    public function __construct(Filesystem $filesystem, SplFileInfoWrapper $splFileInfo)
+
+    public function __construct(Filesystem $filesystem, SplFileInfoWrapper $splFileInfo, csvValidator $csvValidator)
     {
         $this->filesystem = $filesystem;
         $this->splFileInfo = $splFileInfo;
+        $this->csvValidator = $csvValidator;
     }
 
-
-
-    public function getDataFromFile(string $filePath): array
+    /**
+     * @throws \Exception
+     */
+    public function getDataFromFile(string $filePath): void
     {
         $dataPoints = [];
-        $lineCount = 0;
 
+        $this->csvValidator->validate($filePath,$this->filesystem,$this->splFileInfo);
         if ($this->filesystem->exists($filePath)) {
-            $importFile = new \SplFileObject($filePath, 'rb');
+            $importFile = $this->splFileInfo->openFile('r');
 
             while (!$importFile->eof()) {
-                $lineCount += 1;
                 $line = $importFile->fgets();
-
-                if (!empty($line)) {
+                if (preg_match('/[0-9a-zA-Z]/', $line)) {
                     $exchange = ExchangeFactory::createFromCsvLine($line);
                     if ($exchange !== null) {
                         $dataPoints[] = $exchange;
                     }
                 }
             }
+            $this->exchanges = $this->getRandomValues($dataPoints,$importFile);
+        }
+    }
 
-            // Adjust this part according to your logic
-            $lineCount = count($dataPoints);
-            $startLine = rand(0, max(0, $lineCount - 30));
-            $importFile->seek($startLine);
+    public function getRandomValues($dataPoints,$importFile):array
+    {
+        $lineCount = count($dataPoints);
+        $startLine = rand(0, max(0, $lineCount - 30));
+        $importFile->seek($startLine);
 
-            for ($i = 0; $i < 30 && !$importFile->eof(); $i++) {
-                $line = $importFile->fgets();
-                if (!empty($line)) {
-                    $exchange = ExchangeFactory::createFromCsvLine($line);
-                    if ($exchange !== null) {
-                        $dataPoints[] = $exchange;
-                    }
+        for ($i = 0; $i < 30 && !$importFile->eof(); $i++) {
+            $line = $importFile->fgets();
+            if (!empty($line)) {
+                $exchange = ExchangeFactory::createFromCsvLine($line);
+                if ($exchange !== null) {
+                    $dataPoints2[] = $exchange;
                 }
             }
         }
-
-        return $dataPoints;
+        return $dataPoints2;
     }
 
 
@@ -67,7 +71,7 @@ class ExchangeRepository implements \JsonSerializable
     }
 
 
-    public function getAllExchanges():array
+    public function getAllExchanges(): array
     {
         return $this->jsonSerialize();
     }
