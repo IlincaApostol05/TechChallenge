@@ -22,18 +22,41 @@ class ImportController extends AbstractController
     }
 
     #[Route('/api/import', name: 'exchange_import', methods: 'POST')]
-    public function importAction(Request $request): JsonResponse
+    public function importAction(Request $request, SessionInterface $session): JsonResponse
     {
-        /** @var UploadedFile $file */
-        $file = $request->files->get('file');
-        $file->move('var/', 'import.csv');
+        $files = $request->files->all();
 
-        $data = $this->exchangeRepository->getDataFromFile();
+        if (count($files) == 1) {
+            $file = $request->files->get('file');
+            $file->move('var/', 'import.csv');
+            $data = $this->exchangeRepository->getDataFromFile('var/import.csv');
 
-        // Store data in session
-        $this->session->set('processed_data', $data);
+            // Store data in session
+            $this->session->set('processed_data', $data);
+            $this->session->set('filesNumber', 1);
 
-        return new JsonResponse($data);
+            return new JsonResponse(['message' => 'File processed']);
+
+        } elseif (count($files) == 2) {
+            $file1 = reset($files);
+            $file1->move('var/', 'import1.csv');
+            $data1 = $this->exchangeRepository->getDataFromFile('var/import1.csv');
+
+            // Store data in session
+            $this->session->set('processed_data_1', $data1);
+
+            $file2 = end($files);
+            $file2->move('var/', 'import2.csv');
+            $data2 = $this->exchangeRepository->getDataFromFile('var/import2.csv');
+
+            // Store data in session
+            $this->session->set('processed_data_2', $data2);
+            $this->session->set('filesNumber', 2);
+
+            return new JsonResponse(['message' => 'Files processed and session reset']);
+        }
+
+        return new JsonResponse();
     }
 
 }

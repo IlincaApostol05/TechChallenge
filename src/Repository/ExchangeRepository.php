@@ -21,26 +21,27 @@ class ExchangeRepository implements \JsonSerializable
 
 
 
-    public function getDataFromFile(): array
+    public function getDataFromFile(string $filePath): array
     {
-        $dataPoints=[];
-        $lineCount=0;
-        if ($this->filesystem->exists(self::FILE_DIR) !== false) {
-            $importFile = $this->splFileInfo->openFile(mode: 'rb');
+        $dataPoints = [];
+        $lineCount = 0;
+
+        if ($this->filesystem->exists($filePath)) {
+            $importFile = new \SplFileObject($filePath, 'rb');
 
             while (!$importFile->eof()) {
-                $lineCount+=1;
+                $lineCount += 1;
                 $line = $importFile->fgets();
 
-                if(!empty($line)){
+                if (!empty($line)) {
                     $exchange = ExchangeFactory::createFromCsvLine($line);
-                }
-                if ($exchange !== null) {
-                    $dataPoints[] = $exchange;
+                    if ($exchange !== null) {
+                        $dataPoints[] = $exchange;
+                    }
                 }
             }
 
-
+            // Adjust this part according to your logic
             $lineCount = count($dataPoints);
             $startLine = rand(0, max(0, $lineCount - 30));
             $importFile->seek($startLine);
@@ -55,8 +56,10 @@ class ExchangeRepository implements \JsonSerializable
                 }
             }
         }
+
         return $dataPoints;
     }
+
 
     public function jsonSerialize(): array
     {
