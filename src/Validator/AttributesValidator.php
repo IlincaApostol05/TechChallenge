@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Validator;
+namespace Validator;
 
 use App\Entity\Exchange;
 use App\Exception\EmptyFieldException;
