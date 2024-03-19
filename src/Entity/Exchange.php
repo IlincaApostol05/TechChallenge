@@ -15,15 +15,14 @@ class Exchange implements \JsonSerializable
         $this->stockPriceValue = $stockPriceValue;
     }
 
-    public function jsonSerialize():array
+    public function jsonSerialize(): array
     {
-        return[
+        return [
             'stock id' => $this->stockId,
             'timestamp' => $this->timestamp,
             'stock Price Value' => $this->stockPriceValue
         ];
     }
-
 
     public function getStockId(): string
     {
@@ -36,11 +35,9 @@ class Exchange implements \JsonSerializable
         return $this->timestamp;
     }
 
-
     public function getStockPriceValue(): float
     {
         return $this->stockPriceValue;
     }
-
 
 }

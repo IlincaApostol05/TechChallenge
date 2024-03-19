@@ -16,7 +16,7 @@ class AttributesValidator
      */
     public function validate(Exchange $exchange): void
     {
-        $stockId =$exchange->getStockId();
+        $stockId = $exchange->getStockId();
         $timestamp = $exchange->getTimestamp();
         $stockPriceValue = $exchange->getStockPriceValue();
 
@@ -24,8 +24,11 @@ class AttributesValidator
             throw new NotCorrectType();
         }
 
+        if (empty($stockId)) {
+            throw new EmptyFieldException();
+        }
 
-        if(empty($stockId)){
+        if (empty($timestamp)) {
             throw new EmptyFieldException();
         }
 
@@ -36,7 +39,6 @@ class AttributesValidator
         }
 
     }
-
 
 
 }

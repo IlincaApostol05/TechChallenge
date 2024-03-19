@@ -8,7 +8,7 @@ class LessThan30Exception extends \Exception
 {
     public function __construct(
         string     $message = "The file should contain at least 30 lines!",
-        int        $code = 8,
+        int        $code = 3,
         ?Throwable $previous = null
     )
     {

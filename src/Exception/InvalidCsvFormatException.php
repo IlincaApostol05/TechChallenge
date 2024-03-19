@@ -8,7 +8,7 @@ class InvalidCsvFormatException extends \Exception
 {
     public function __construct(
         string     $message = "Invalid csv format!",
-        int        $code = 3,
+        int        $code = 5,
         ?Throwable $previous = null
     )
     {

@@ -8,7 +8,7 @@ class NotCorrectType extends \Exception
 {
     public function __construct(
         string     $message = "The csv file contains values(s) that does not correspond to the correct type:float for stock price and string for stock id!",
-        int        $code = 7,
+        int        $code = 1,
         ?Throwable $previous = null
     )
     {

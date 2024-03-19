@@ -2,79 +2,74 @@
 
 namespace App\Repository;
 
+use App\Exception\EmptyFieldException;
+use App\Exception\InvalidCsvFormatException;
+use App\Exception\LessThan30Exception;
 use App\Factory\ExchangeFactory;
 use App\Service\SplFileInfoWrapper;
+use App\Validator\AttributesValidator;
 use App\Validator\csvValidator;
-use Symfony\Component\Filesystem\Filesystem;
 
-class ExchangeRepository implements \JsonSerializable
+class ExchangeRepository
 {
-    private array $exchanges = [];
-    private Filesystem $filesystem;
     private SplFileInfoWrapper $splFileInfo;
     private csvValidator $csvValidator;
+    private AttributesValidator $AttributesValidator;
 
 
-    public function __construct(Filesystem $filesystem, SplFileInfoWrapper $splFileInfo, csvValidator $csvValidator)
+    public function __construct(SplFileInfoWrapper $splFileInfo, csvValidator $csvValidator, AttributesValidator $AttributesValidator)
     {
-        $this->filesystem = $filesystem;
         $this->splFileInfo = $splFileInfo;
         $this->csvValidator = $csvValidator;
+        $this->AttributesValidator = $AttributesValidator;
     }
 
     /**
-     * @throws \Exception
+     * @throws EmptyFieldException
+     * @throws InvalidCsvFormatException
+     * @throws LessThan30Exception
      */
-    public function getDataFromFile(string $filePath): array
+
+    public function getDataFromFile(): array
     {
         $dataPoints = [];
 
-        //$this->csvValidator->validate($filePath,$this->splFileInfo);
-            $importFile = $this->splFileInfo->openFile('r');
+        $this->csvValidator->validate($this->splFileInfo);
+        $importFile = $this->splFileInfo->openFile('r');
 
-            while (!$importFile->eof()) {
-                $line = $importFile->fgets();
-                if (preg_match('/[0-9a-zA-Z]/', $line)) {
-                    $exchange = ExchangeFactory::createFromCsvLine($line);
-                    if ($exchange !== null) {
-                        $dataPoints[] = $exchange;
-                    }
-                }
+        while (!$importFile->eof()) {
+            $line = $importFile->fgets();
+            if (preg_match('/[0-9a-zA-Z]/', $line)) {
+                $exchange = ExchangeFactory::createFromCsvLine($line);
+                $dataPoints[] = $exchange;
             }
-            $dataPoints = $this->getRandomValues($dataPoints,$importFile);
-            //print_r($dataPoints);
+        }
 
         return $dataPoints;
     }
 
-    public function getRandomValues($dataPoints,$importFile):array
+    /**
+     * @throws EmptyFieldException
+     */
+
+    public function getRandomValues($allDataPoints): array
     {
-        $lineCount = count($dataPoints);
+        foreach ($allDataPoints as $dataPoint) {
+            $this->AttributesValidator->validate($dataPoint);
+
+        }
+        $dataPoints = [];
+        $importFile = $this->splFileInfo->openFile('r');
+        $lineCount = count($allDataPoints);
         $startLine = rand(0, max(0, $lineCount - 30));
         $importFile->seek($startLine);
 
         for ($i = 0; $i < 30 && !$importFile->eof(); $i++) {
             $line = $importFile->fgets();
-            if (!empty($line)) {
-                $exchange = ExchangeFactory::createFromCsvLine($line);
-                if ($exchange !== null) {
-                    $dataPoints2[] = $exchange;
-                }
-            }
+            $exchange = ExchangeFactory::createFromCsvLine($line);
+            $dataPoints[] = $exchange;
         }
-        $this->exchanges = array_merge($dataPoints2,$dataPoints2);
-        return $dataPoints2;
+        return $dataPoints;
     }
 
-
-    public function jsonSerialize(): array
-    {
-        return $this->exchanges;
-    }
-
-
-    public function getAllExchanges(): array
-    {
-        return $this->jsonSerialize();
-    }
 }

@@ -3,9 +3,13 @@
 namespace App\Factory;
 
 use App\Entity\Exchange;
+use App\Exception\EmptyFieldException;
 
 class ExchangeFactory
 {
+    /**
+     * @throws EmptyFieldException
+     */
     public static function createFromCsvLine(string $line): ?Exchange
     {
         $data = explode(',', $line);
@@ -15,6 +19,7 @@ class ExchangeFactory
             $stockPriceValue = floatval(trim($data[2]));
             return new Exchange($stockId, $timestamp, $stockPriceValue);
         }
-        return null; // Invalid data format
+        throw new EmptyFieldException();
     }
+
 }

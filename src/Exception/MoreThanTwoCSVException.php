@@ -8,7 +8,7 @@ class MoreThanTwoCSVException extends \Exception
 {
     public function __construct(
         string     $message = "The input must be 1 or 2 csv files!",
-        int        $code = 5,
+        int        $code = 2,
         ?Throwable $previous = null
     )
     {

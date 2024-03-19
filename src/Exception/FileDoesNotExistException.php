@@ -8,7 +8,7 @@ class FileDoesNotExistException extends \Exception
 {
     public function __construct(
         string     $message = "File does not exist or no file provided!",
-        int        $code = 2,
+        int        $code = 6,
         ?Throwable $previous = null
     )
     {

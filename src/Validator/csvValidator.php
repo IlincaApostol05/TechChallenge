@@ -13,7 +13,7 @@ class csvValidator
      * @throws InvalidCsvFormatException
      * @throws LessThan30Exception
      */
-    public function validate(string $filePath, SplFileInfoWrapper $splFileInfo): void
+    public function validate(SplFileInfoWrapper $splFileInfo): void
     {
         $importFile = $splFileInfo->openFile(mode: 'rb');
         $lineCount = 0;
@@ -24,15 +24,14 @@ class csvValidator
             }
         }
 
-        $extension = $splFileInfo->getExtension();
-        if ($extension != 'csv') {
-            throw new InvalidCsvFormatException();
-        }
-
         if ($lineCount < 30) {
             throw new LessThan30Exception();
         }
 
+        $extension = $splFileInfo->getExtension();
+        if ($extension != 'csv') {
+            throw new InvalidCsvFormatException();
+        }
 
     }
 
