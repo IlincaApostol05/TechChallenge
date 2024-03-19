@@ -9,7 +9,6 @@ use App\Service\FileProcessorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ImportController extends AbstractController
@@ -21,14 +20,15 @@ class ImportController extends AbstractController
         $this->fileProcessorService = $fileProcessorService;
     }
 
+    /**
+     * @throws MoreThanTwoCSVException
+     * @throws FileDoesNotExistException
+     * @throws EmptyFieldException
+     */
     #[Route('/api/import', name: 'exchange_import', methods: 'POST')]
     public function importAction(Request $request): JsonResponse
     {
-        try {
-            $this->fileProcessorService->processImport($request);
-            return new JsonResponse(['message' => 'Import processing completed']);
-        } catch (FileDoesNotExistException|MoreThanTwoCSVException|EmptyFieldException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        $this->fileProcessorService->processImport($request);
+        return new JsonResponse(['message' => 'Import processing completed']);
     }
 }

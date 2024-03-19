@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-class Exchange implements \JsonSerializable
+class Exchange
 {
     private string $stockId;
     private string $timestamp;
@@ -15,20 +15,10 @@ class Exchange implements \JsonSerializable
         $this->stockPriceValue = $stockPriceValue;
     }
 
-    public function jsonSerialize(): array
-    {
-        return [
-            'stock id' => $this->stockId,
-            'timestamp' => $this->timestamp,
-            'stock Price Value' => $this->stockPriceValue
-        ];
-    }
-
     public function getStockId(): string
     {
         return $this->stockId;
     }
-
 
     public function getTimestamp(): string
     {

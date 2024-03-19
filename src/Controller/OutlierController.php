@@ -25,6 +25,7 @@ class OutlierController extends AbstractController
         $filesNumber = $this->session->get('filesNumber');
 
         $this->outlierProcessorService->processOutliers($filesNumber);
-        return new JsonResponse(['message' => 'Outlier processing completed']);
+
+        return new JsonResponse(['message' => 'Outlier processing completed!You can see all the data in the csv files!']);
     }
 }

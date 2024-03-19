@@ -5,8 +5,10 @@ namespace App\Service;
 use App\Exception\EmptyFieldException;
 use App\Exception\FileDoesNotExistException;
 use App\Exception\InvalidCsvFormatException;
+use App\Exception\InvalidTimestampException;
 use App\Exception\LessThan30Exception;
 use App\Exception\MoreThanTwoCSVException;
+use App\Exception\NotCorrectType;
 use App\Repository\ExchangeRepository;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,10 +25,13 @@ class FileProcessorService
         $this->exchangeRepository = $exchangeRepository;
     }
 
+
     /**
-     * @throws EmptyFieldException
-     * @throws FileDoesNotExistException
      * @throws MoreThanTwoCSVException
+     * @throws EmptyFieldException
+     * @throws InvalidCsvFormatException
+     * @throws LessThan30Exception
+     * @throws FileDoesNotExistException
      */
     public function processImport(Request $request): void
     {
@@ -60,8 +65,11 @@ class FileProcessorService
         }
     }
 
+
     /**
      * @throws EmptyFieldException
+     * @throws LessThan30Exception
+     * @throws InvalidCsvFormatException
      */
     private function processSingleFile(array $files): void
     {
@@ -74,6 +82,8 @@ class FileProcessorService
     }
 
     /**
+     * @throws LessThan30Exception
+     * @throws InvalidCsvFormatException
      * @throws EmptyFieldException
      */
     private function processMultipleFiles(array $files): void
@@ -101,9 +111,11 @@ class FileProcessorService
     }
 
     /**
+     * @throws NotCorrectType
+     * @throws InvalidTimestampException
+     * @throws InvalidCsvFormatException
      * @throws EmptyFieldException
      * @throws LessThan30Exception
-     * @throws InvalidCsvFormatException
      */
     private function getRandomExchanges(UploadedFile $file): array
     {

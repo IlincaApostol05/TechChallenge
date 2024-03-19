@@ -24,13 +24,17 @@ services:
     App\Repository\ExchangeRepository:
         class: App\Repository\ExchangeRepository
         arguments:
-            $filesystem: '@filesystem'
             $splFileInfo: '@App\Service\SplFileInfoWrapper'
 
     App\Service\SplFileInfoWrapper:
         class: App\Service\SplFileInfoWrapper
         arguments:
             $path: "var/import.csv"
+
+
+    App\Controller\OutlierController:
+        arguments:
+            $session: '@session'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -4,7 +4,9 @@ namespace App\Repository;
 
 use App\Exception\EmptyFieldException;
 use App\Exception\InvalidCsvFormatException;
+use App\Exception\InvalidTimestampException;
 use App\Exception\LessThan30Exception;
+use App\Exception\NotCorrectType;
 use App\Factory\ExchangeFactory;
 use App\Service\SplFileInfoWrapper;
 use App\Validator\AttributesValidator;
@@ -48,10 +50,12 @@ class ExchangeRepository
         return $dataPoints;
     }
 
+
     /**
      * @throws EmptyFieldException
+     * @throws InvalidTimestampException
+     * @throws NotCorrectType
      */
-
     public function getRandomValues($allDataPoints): array
     {
         foreach ($allDataPoints as $dataPoint) {
