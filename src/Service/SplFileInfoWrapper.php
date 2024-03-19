@@ -18,5 +18,12 @@ class SplFileInfoWrapper
     public function openFile(string $mode = "r"): SplFileObject
     {
         return $this->splFileInfo->openFile($mode);
+
+    }
+
+    public function getExtension(): string
+    {
+        return $this->splFileInfo->getExtension();
+
     }
 }

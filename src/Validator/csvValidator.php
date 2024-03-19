@@ -2,34 +2,39 @@
 
 namespace App\Validator;
 
-use App\Exception\FileDoesNotExistException;
+use App\Exception\InvalidCsvFormatException;
 use App\Exception\LessThan30Exception;
 use App\Service\SplFileInfoWrapper;
-use Symfony\Component\Filesystem\Filesystem;
+
 
 class csvValidator
 {
     /**
-     * @throws \Exception
+     * @throws InvalidCsvFormatException
+     * @throws LessThan30Exception
      */
-    public function validate(string $filePath, Filesystem $filesystem, SplFileInfoWrapper $splFileInfo): void
+    public function validate(string $filePath, SplFileInfoWrapper $splFileInfo): void
     {
-        if (!($filesystem->exists($filePath))){
-            throw new FileDoesNotExistException('FILE DOES NOT EXIST');
-        }
         $importFile = $splFileInfo->openFile(mode: 'rb');
-        $lineCount=0;
+        $lineCount = 0;
         while (!$importFile->eof()) {
             $line = $importFile->fgets();
-            if (preg_match('/[0-9a-zA-Z]/', $line)){
+            if (preg_match('/[0-9a-zA-Z]/', $line)) {
                 $lineCount += 1;
             }
         }
 
-        if($lineCount<30){
+        $extension = $splFileInfo->getExtension();
+        if ($extension != 'csv') {
+            throw new InvalidCsvFormatException();
+        }
+
+        if ($lineCount < 30) {
             throw new LessThan30Exception();
         }
 
+
     }
+
 
 }

@@ -25,12 +25,11 @@ class ExchangeRepository implements \JsonSerializable
     /**
      * @throws \Exception
      */
-    public function getDataFromFile(string $filePath): void
+    public function getDataFromFile(string $filePath): array
     {
         $dataPoints = [];
 
-        $this->csvValidator->validate($filePath,$this->filesystem,$this->splFileInfo);
-        if ($this->filesystem->exists($filePath)) {
+        //$this->csvValidator->validate($filePath,$this->splFileInfo);
             $importFile = $this->splFileInfo->openFile('r');
 
             while (!$importFile->eof()) {
@@ -42,8 +41,10 @@ class ExchangeRepository implements \JsonSerializable
                     }
                 }
             }
-            $this->exchanges = $this->getRandomValues($dataPoints,$importFile);
-        }
+            $dataPoints = $this->getRandomValues($dataPoints,$importFile);
+            //print_r($dataPoints);
+
+        return $dataPoints;
     }
 
     public function getRandomValues($dataPoints,$importFile):array
@@ -61,6 +62,7 @@ class ExchangeRepository implements \JsonSerializable
                 }
             }
         }
+        $this->exchanges = array_merge($dataPoints2,$dataPoints2);
         return $dataPoints2;
     }
 
