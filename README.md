@@ -22,15 +22,15 @@ APIs
 After starting the server, you can access the following APIs:
 
 1. Import API
-Endpoint: POST /api/import
+Endpoint: POST localhost/api/import
 
 Description: Upload 1 or 2 CSV files containing the correct format(Each file has 
-•Stock-ID (Ticker), Timestamp (dd-mm-yyyy), stock price value.).
+:Stock-ID (string), Timestamp (dd-mm-yyyy), stock price value(float)).
 
 Output: 30 random data points extracted from each file, stored in new CSV file/s named random(1,2).csv ,in the var folder.
 
 2. Outliers API
-Endpoint: GET /api/import
+Endpoint: GET localhost/api/outlier
 
 Description: Retrieve outliers from the 30 sampled data points.
 
