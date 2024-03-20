@@ -24,14 +24,16 @@ class OutlierProcessorService
         $processedData2 = $this->session->get('processed_data_2');
 
         if ($filesNumber == 1) {
-            $filteredData = $this->outlierRepository->processOutliersForData($processedData);
+            $filteredData = $this->outlierRepository->processOutliersForData($processedData,1);
             return $filteredData;
         } else {
-            $filteredData1 = $this->outlierRepository->processOutliersForData($processedData1);
-            $filteredData2 = $this->outlierRepository->processOutliersForData($processedData2);
+            $filteredData1 = $this->outlierRepository->processOutliersForData($processedData1,1);
+            $filteredData2 = $this->outlierRepository->processOutliersForData($processedData2,2);
             $filteredData = array_merge($filteredData1, $filteredData2);
             return $filteredData;
         }
 
     }
+
+
 }

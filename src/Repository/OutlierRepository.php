@@ -5,15 +5,17 @@ namespace App\Repository;
 
 class OutlierRepository
 {
-    public function processOutliersForData(array $processedData): array
+    public function processOutliersForData(array $processedData,int $index): array
     {
         $stockPrices = $this->extractStockPrices($processedData);
         $mean = $this->calculateMean($stockPrices);
         $standardDeviation = $this->calculateStandardDeviation($stockPrices, $mean);
 
         $outliers = $this->findOutliers($stockPrices, $mean, $standardDeviation);
+        $filteredData = $this->filterOutlierData($processedData, $outliers);
+        $this->writeDataToCsv($filteredData, $mean, $standardDeviation, $index);
 
-        return $this->filterOutlierData($processedData, $outliers);
+        return $filteredData;
     }
 
     private function extractStockPrices(array $processedData): array
@@ -55,11 +57,40 @@ class OutlierRepository
     {
         $filteredData = [];
         foreach ($processedData as $dataPoint) {
-            if (!in_array($dataPoint->getStockPriceValue(), $outliers)) {
+            if (in_array($dataPoint->getStockPriceValue(), $outliers)) {
                 $filteredData[] = $dataPoint;
             }
         }
         return $filteredData;
+    }
+
+    private function writeDataToCsv(array $data, float $mean, float $standardDeviation, int $index): void
+    {
+        $csvFilePath = 'var/' . $index . '.csv';
+        $csvFile = fopen($csvFilePath, 'w');
+
+        $outlierThreshold = 2 * $standardDeviation;
+
+        foreach ($data as $object) {
+            $deviationFromMean = abs($object->getStockPriceValue() - $mean);
+
+            if ($outlierThreshold > 0) {
+                $percentageDeviation = ($deviationFromMean / $outlierThreshold) * 100;
+            } else {
+                $percentageDeviation = 0;
+            }
+
+            $rowData = [
+                $object->getStockId(),
+                $object->getTimestamp(),
+                $object->getStockPriceValue(),
+                $mean,
+                $standardDeviation,
+                $percentageDeviation
+            ];
+            fputcsv($csvFile, $rowData);
+        }
+        fclose($csvFile);
     }
 
 }

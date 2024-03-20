@@ -1,6 +1,6 @@
 <?php
 
-namespace Validator;
+namespace App\Validator;
 
 use App\Exception\InvalidCsvFormatException;
 use App\Exception\LessThan30Exception;

@@ -96,7 +96,7 @@ class FileProcessorService
 
         $file2 = end($files);
         $randomData2 = $this->getRandomExchanges($file2);
-        $this->writeRandomDataToCsv('var/random2.csv', $randomData1);
+        $this->writeRandomDataToCsv('var/random2.csv', $randomData2);
         $this->session->set('processed_data_2', $randomData2);
 
     }
